@@ -1,0 +1,16 @@
+name: Feature request
+description: Propose a concrete improvement.
+labels: [enhancement, status:triage]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: Task you want Jarvis to complete
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: How we can verify it works
+    validations:
+      required: true

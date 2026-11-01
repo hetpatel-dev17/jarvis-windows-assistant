@@ -1,0 +1,13 @@
+# OpenJarvis stays an attributed dependency, not a renamed vendor checkout.
+OpenJarvis[desktop,browser] @ git+https://github.com/open-jarvis/OpenJarvis.git@45504acbb49459993d60e19d5b37c85fbc0c35ed
+fastapi==0.136.3
+uvicorn==0.54.0
+pydantic==2.14.0
+httpx==0.28.1
+psutil==7.2.2
+playwright==1.63.0
+faster-whisper==1.2.1
+websockets==16.1.1
+soundfile==0.14.0
+pycaw==20260927
+comtypes==1.4.17

@@ -1,0 +1,101 @@
+JARVIS - SIMPLE COMMANDS
+
+Open Start Jarvis on your Desktop.
+Use the newest Jarvis window. Refresh or close older Jarvis tabs.
+
+Press Speak. Talk. Press Finish speaking.
+Spoken commands now run automatically.
+You can switch that option off if you prefer to check the words first.
+
+WINDOWS FILES
+Open Desktop.
+Find something like roadmap on Desktop.
+Open match one.
+Find holiday video in Videos.
+Find budget in computer.
+Go up one folder.
+
+Use a few words from the name. Jarvis can handle small spelling mistakes.
+Search results show full paths. Choose the right numbered match.
+A whole-computer search can be partial. Narrow the folder for a deeper search.
+Opening a file locally does not upload it.
+
+VIDEOS
+Search Kishore Kumar on YouTube and play the first video.
+Play the first video.
+Pause the video.
+Resume the video.
+Next video.
+Previous video.
+Skip ahead 20 seconds.
+Rewind 10 seconds.
+Set YouTube volume to 30 percent.
+Volume up.
+Volume plus.
+Lower volume.
+Volume down.
+Volume max.
+Mute.
+Unmute.
+
+Plain volume commands control YouTube. Up and down change it by 10 points.
+Maximum means 100 percent. Unmute restores 50 percent if volume was zero.
+
+COMPUTER SOUND AND SETTINGS
+Computer volume up.
+Computer volume down.
+Set computer volume to 50 percent.
+Mute the computer.
+Unmute the computer.
+Open Wi-Fi settings.
+Open Bluetooth settings.
+
+Wi-Fi and Bluetooth commands open Windows settings.
+They do not automatically change the connection switches.
+
+CHATGPT
+Open ChatGPT.
+Open a new chat in ChatGPT.
+Ask ChatGPT: Explain solar panels in simple words.
+Read the ChatGPT reply.
+Open chat named YOUR EXACT CHAT NAME in ChatGPT.
+Search ChatGPT chats for YOUR EXACT CHAT NAME.
+
+FILES
+Open Desktop.
+Open Downloads.
+Open Documents.
+Open folder Study.
+Select the PDF.
+Attach and send selected file to ChatGPT.
+
+You can also click Choose a file in Jarvis.
+Open a folder. Select one file.
+Click Attach and send selected file to ChatGPT.
+Review the file and message. Approve once.
+Jarvis uploads the file, clicks Send, and reads the real answer.
+It waits for the upload to finish before sending.
+Whole folders are not uploaded. Choose a file inside the folder.
+The current attachment limit in Jarvis is 25 MB.
+
+To include your own message, say:
+Attach and send selected file to ChatGPT with message: Please explain this document.
+
+APPROVAL AND STOP
+Approve this action.
+Yes send it.
+Yes upload it.
+Cancel this action.
+Stop task.
+Stop voice.
+
+Approval phrases work while Jarvis shows a pending approval.
+You can click the approval buttons instead.
+Stop cannot undo a message that has already been sent.
+
+VOICE
+Replies use one voice channel on this computer.
+Opening extra Jarvis tabs does not replay a reply.
+ElevenLabs still uses your voice credits.
+Your AI and speech recognition run locally.
+The microphone uses a button. Jarvis is not always listening.

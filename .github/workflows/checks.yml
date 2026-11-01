@@ -1,0 +1,40 @@
+name: Checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  windows-checks:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install fixture test dependencies
+        run: python -m pip install playwright==1.63.0
+      - name: Install fixture browser
+        run: python -m playwright install chromium
+      - name: Unit checks
+        run: python -m unittest discover -s tests -p "test_*.py" -v
+      - name: YouTube browser fixtures
+        run: python tests/check_youtube_browser.py
+      - name: Voice and Windows UI pipeline fixtures
+        run: python tests/check_ui_pipeline.py
+      - name: Python syntax
+        run: python -m compileall -q -x "[\\/](.git|.venv)[\\/]" .
+      - name: JavaScript syntax
+        run: node --check ui.js
+      - name: PowerShell syntax
+        shell: pwsh
+        run: |
+          Get-ChildItem -LiteralPath . -Filter *.ps1 | ForEach-Object {
+            $parseTokens=$null; $parseErrors=$null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($_.FullName,[ref]$parseTokens,[ref]$parseErrors)
+            if ($parseErrors) { throw ($parseErrors | Out-String) }
+          }
