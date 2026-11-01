@@ -101,10 +101,11 @@ No credentials, personal documents, session cookies, browser profiles, or model 
 ```powershell
 python -m unittest discover -s tests -p "test_*.py" -v
 python tests/check_youtube_browser.py
+python tests/check_ui_pipeline.py
 node --check ui.js
 ```
 
-The browser fixture check requires `playwright` and Chrome, or `python -m playwright install chromium` for the Chromium fallback. Fixtures do not send messages or upload real documents. GitHub Actions runs filename/operator tests, browser fixtures, JavaScript syntax, Python compilation, and PowerShell parsing on Windows.
+The browser fixture checks require `playwright` and Chrome, or `python -m playwright install chromium` for the Chromium fallback. Fixtures do not send messages or upload real documents. GitHub Actions runs filename/operator tests, the recording-to-file-opening UI pipeline, YouTube browser fixtures, JavaScript syntax, Python compilation, and PowerShell parsing on Windows.
 
 See [architecture](docs/ARCHITECTURE.md), [contributing](CONTRIBUTING.md), and [security reporting](SECURITY.md).
 

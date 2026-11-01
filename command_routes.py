@@ -41,12 +41,16 @@ def parse(text):
         if found:
             number={'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8,'nine':9,'ten':10}.get(found.group(1),found.group(1))
             return 'windows_operator',{'action':'open_match','target':str(number)}
-        found=re.fullmatch(r'(?:find|look for|search for|search)\s+(.+?)(?:\s+(?:on|in|under)\s+(?:my |the )?(desktop|downloads|documents|pictures|music|videos|computer|all drives|this folder|here))?',t.rstrip('.!?'),re.I)
+        found=re.fullmatch(r'(?:find|look for|search for|search)\s+(.+?)(?:\s+(?:on|in|under)\s+(?:my |the )?(desktop|downloads|documents|pictures|music|videos|home|computer|all drives|this folder|here|[a-z]:|[a-z] drive|drive [a-z]))?',t.rstrip('.!?'),re.I)
         if found and not re.search(r'\b(?:youtube|you tube|google|web|browser|whatsapp|internet)\b',lower):
             query=re.sub(r'^(?:(?:a |the )?(?:file|folder|document)\s+(?:(?:called|named|containing)\s+)?|something\s+(?:(?:like|called|named)\s+)?)','',found.group(1),flags=re.I).strip(' "\'')
-            return 'windows_operator',{'action':'search','query':query,'scope':(found.group(2) or 'computer').casefold()}
+            scope=(found.group(2) or 'computer').casefold()
+            if 'drive' in scope and scope!='all drives':scope=re.search(r'\b[a-z]\b',scope).group()+':'
+            return 'windows_operator',{'action':'search','query':query,'scope':scope}
         found=re.fullmatch(r'(?:open|go to|show)\s+(?:my |the )?(desktop|downloads|documents|pictures|music|videos)(?: folder)?',lower)
         if found:return 'windows_operator',{'action':'open','target':found.group(1)}
+        found=re.fullmatch(r'(?:open|go to)\s+(?:the )?(?:drive ([a-z])|([a-z]) drive|([a-z]):)',lower)
+        if found:return 'windows_operator',{'action':'open','target':next(g for g in found.groups() if g)+':'}
         if re.fullmatch(r'(?:go )?(?:back|up)(?: one)? folder',lower):
             return 'windows_operator',{'action':'open','target':'..'}
         found=re.fullmatch(r'(?:open|play)\s+(?:the )?(?:file|folder|document|local video|local song)\s+(.+)',t,re.I)

@@ -1,5 +1,7 @@
 # Roadmap
 
+Active tracking: [pipeline acceptance #1](https://github.com/hetpatel-dev17/jarvis-windows-assistant/issues/1), [Windows search acceptance #2](https://github.com/hetpatel-dev17/jarvis-windows-assistant/issues/2), and [clean-machine setup #3](https://github.com/hetpatel-dev17/jarvis-windows-assistant/issues/3).
+
 ## Phase 1 — Connect and verify pipelines
 
 - [x] Local model and OpenJarvis orchestration.

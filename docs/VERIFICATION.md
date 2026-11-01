@@ -4,7 +4,7 @@ Recorded during development on Windows, 1 November 2026. Live checks are observa
 
 | Pipeline | Evidence | Remaining acceptance work |
 | --- | --- | --- |
-| Windows file operator | Automated tests for fragments, typos, ambiguity, chosen-match opening, stale/deleted results, cancellation, partial search, and blocked file types | Large drives, offline files, more accessibility testing |
+| Windows file operator | Automated tests for fragments, typos, ambiguity, chosen-match opening, stale/deleted results, cancellation, partial search, and blocked file types. Live partial-name/typo search found a known PDF; chosen opening was requested and a matching document window appeared in Edge. | Large drives, offline files, more accessibility testing |
 | Voice command wiring | Browser UI checks for recording/transcription dispatch and explicit review mode | More accents, noisy rooms, long transcripts |
 | Single voice channel | Worker tests and multiple-tab UI checks; real ElevenLabs synthesis tested | Audio-device changes and suspend/resume |
 | YouTube playback | Live search/play, next, previous, pause, volume, mute/unmute, zero-volume recovery; independent browser fixtures | Playlists, live streams, region/ad variations |
@@ -15,3 +15,5 @@ Recorded during development on Windows, 1 November 2026. Live checks are observa
 | Fresh Windows setup | Dependency script, checksum pin, Python/PowerShell syntax and CI checks | Full clean-machine installation |
 
 Do not replace a missing check with a success claim. Record the trigger, observed result, and remaining limitation when adding evidence.
+
+The [first GitHub Actions run](https://github.com/hetpatel-dev17/jarvis-windows-assistant/actions/runs/41300483793) passed on a separate Windows runner. It covered unit checks, YouTube browser fixtures, the recorded-command-to-file-opening UI fixture, Python/JavaScript syntax, and PowerShell parsing. This does not substitute for account-specific live checks or a full fresh installation.

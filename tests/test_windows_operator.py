@@ -55,11 +55,17 @@ class WindowsFilesTest(unittest.TestCase):
     def test_cancel_does_not_open(self):
         with self.assertRaises(RuntimeError):self.operator.search('roadmap','Desktop',cancelled=lambda:True)
         self.assertEqual(self.opened,[])
+    def test_unavailable_drive_has_a_clear_error(self):
+        with self.assertRaisesRegex(ValueError,'not currently available'):
+            self.operator.control('open',target='Z:')
     def test_user_phrases_reach_the_operator(self):
         for phrase,action in [('Find something like roadmap on Desktop','search'),('Look for hardwre roadmap in Documents','search'),('Open match one','open_match'),('Open folder Engineering','open'),('Open Downloads','open')]:
             result=command_routes.parse(phrase)
             self.assertEqual((result[0],result[1]['action']),('windows_operator',action),phrase)
         for phrase in ['Search Kishore Kumar on YouTube and play the first video','Ask ChatGPT: Find a file','Attach selected file to ChatGPT']:
             self.assertNotEqual(command_routes.parse(phrase)[0],'windows_operator')
+        for phrase in ['Find budget in D drive','Find budget in drive D','Find budget in D:']:
+            self.assertEqual(command_routes.parse(phrase)[1]['scope'],'d:')
+        self.assertEqual(command_routes.parse('Open D drive')[1]['target'],'d:')
 
 if __name__=='__main__':unittest.main()

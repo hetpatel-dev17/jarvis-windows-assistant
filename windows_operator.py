@@ -79,6 +79,8 @@ class WindowsOperator:
         if target.casefold() in ('here','this folder','current folder'):return self.cwd
         root=next((p for k,p in self.roots.items() if k.casefold()==target.casefold().rstrip('\\/')),None)
         if root:return root
+        if re.fullmatch(r'[a-z]:[\\/]?',target,re.I):
+            raise ValueError('That local drive is not currently available.')
         if target in ('..','back','up'):return self.validate(self.cwd.parent)
         supplied=Path(target)
         return self.validate(supplied if supplied.is_absolute() else self.cwd/supplied)
