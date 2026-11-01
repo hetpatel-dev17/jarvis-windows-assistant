@@ -15,7 +15,8 @@ SKIP={'.git','.venv','venv','node_modules','__pycache__','appdata','windows',
       'program files','program files (x86)','programdata','$recycle.bin',
       'system volume information','.cache','.codex','site-packages'}
 PRIVATE=re.compile(r'api[ _-]?key|credentials|password|secret|token',re.I)
-SAFE_EXT=set('pdf txt md rtf doc docx odt xls xlsx ods csv ppt pptx odp png jpg jpeg webp gif bmp tif tiff svg ico mp3 wav flac m4a aac ogg wma mp4 mkv avi mov webm mpeg mpg m4v zip 7z rar tar gz json yaml yml toml log'.split())
+SAFE_EXT=set('pdf txt md rtf doc docx odt xls xlsx ods csv ppt pptx odp png jpg jpeg webp gif bmp tif tiff svg ico mp3 wav flac m4a aac ogg wma mp4 mkv avi mov webm mpeg mpg m4v zip 7z rar tar gz json yaml yml toml log dxf dwg step stp stl obj iges igs 3mf blend psd ai eps xcf'.split())
+FILE_TYPES={'pdf':{'pdf'},'word':{'doc','docx','odt','rtf'},'word document':{'doc','docx','odt','rtf'},'document':{'pdf','doc','docx','odt','rtf'},'drawing':{'dxf','dwg'},'dxf':{'dxf'},'dwg':{'dwg'},'spreadsheet':{'xlsx','xls','ods','csv'}}
 
 
 def words(text):
@@ -142,16 +143,54 @@ class WindowsOperator:
         p=self.validate(path)
         if not p.is_dir() and p.suffix.casefold().lstrip('.') not in SAFE_EXT:
             raise ValueError('This file type is not enabled for opening. Documents, pictures, music, videos, and archives are supported.')
-        self.opener(str(p))
+        try:self.opener(str(p))
+        except OSError as error:
+            if getattr(error,'winerror',None) in (31,1155):
+                raise ValueError(f'Windows has no default app for {p.suffix} files. Install or choose a compatible app in Windows Default apps.') from None
+            raise
         with self.lock:
             self.cwd=p if p.is_dir() else p.parent
             self.visible=True;self.revision+=1
             self.message=f'Asked Windows to open {p.name or str(p)}.'
+            if p.is_dir():self.list_folder()
         return {'status':'opened','path':str(p),'message':self.message}
+
+    def list_folder(self):
+        matches=[]
+        for p in sorted(self.cwd.iterdir(),key=lambda p:(not p.is_dir(),p.name.casefold())):
+            try:
+                checked=self.validate(p)
+                if not checked.is_dir() and checked.suffix.lower().lstrip('.') not in SAFE_EXT:continue
+                matches.append({'id':uuid.uuid4().hex,'number':len(matches)+1,'name':checked.name,'path':str(checked),'folder':checked.is_dir(),'score':100})
+            except (ValueError,OSError):continue
+            if len(matches)>=100:break
+        with self.lock:
+            self.matches=matches;self.revision+=1;self.visible=True;self.partial=len(matches)>=100
+            self.query='';self.message=f'Opened {self.cwd.name}. Showing {len(matches)} folders and files. Say open match and its number, or open the PDF.'
+        return {'status':'listed',**self.snapshot()}
+
+    def open_reference(self,target,scope,cancelled):
+        clean=re.sub(r'^(?:that|this|the|my)\s+','',target.strip(),flags=re.I)
+        clean=re.sub(r'\s+file$','',clean,flags=re.I)
+        extensions=FILE_TYPES.get(clean.casefold())
+        if extensions:
+            self.list_folder()
+            matches=[m for m in self.matches if not m['folder'] and Path(m['path']).suffix.lower().lstrip('.') in extensions]
+            self.matches=matches
+            for i,m in enumerate(matches,1):m['number']=i
+            if len(matches)==1:return self.open_path(matches[0]['path'])
+            self.message=f'I found {len(matches)} {clean} files here. Choose a numbered match.' if matches else f'I did not find a {clean} file in this folder.'
+            return {'status':'matches_ready',**self.snapshot()}
+        try:return self.open_path(self.location(clean))
+        except FileNotFoundError:
+            result=self.search(clean,scope,cancelled)
+            if len(result['matches'])==1:return self.open_path(result['matches'][0]['path'])
+            return result
 
     def control(self,action,query='',scope='here',target='',match_id='',cancelled=lambda:False):
         if cancelled():raise RuntimeError('Stopped by you.')
         if action=='status':return self.snapshot()
+        if action=='list':return self.list_folder()
         if action=='search':return self.search(query,scope,cancelled)
         if action=='open_match':
             with self.lock:
@@ -159,7 +198,5 @@ class WindowsOperator:
             if match is None:raise ValueError('That match is no longer in the latest search. Search again or choose a shown result.')
             return self.open_path(match['path'])
         if action=='open':
-            try:return self.open_path(self.location(target))
-            except FileNotFoundError:
-                return self.search(target,scope,cancelled)
+            return self.open_reference(target,scope,cancelled)
         raise ValueError('Unknown Windows file action.')

@@ -44,7 +44,7 @@ from openjarvis.tools._stubs import BaseTool, ToolSpec
 from openjarvis.speech.elevenlabs_tts import ElevenLabsTTSBackend
 
 MODEL = os.environ.get('JARVIS_MODEL','qwen2.5:7b-instruct-q4_K_M')
-UI_VERSION='2026-11-01-controls-5'
+UI_VERSION='2026-11-01-controls-6'
 TOKEN_PATH = DATA / 'local-token.txt'
 if not TOKEN_PATH.exists():
     TOKEN_PATH.write_text(secrets.token_urlsafe(32), encoding='utf-8')
@@ -365,6 +365,9 @@ def file_action(action,target=''):
 
 
 def windows_action(**params):
+    if params.get('action')=='open_selected':
+        if FILES.selected is None:raise ValueError('First choose a file in the attachment picker.')
+        params={'action':'open','target':str(FILES.selected)}
     info=WINDOWS.control(**params,cancelled=CANCEL.is_set)
     if info.get('status')=='opened' and Path(info['path']).is_dir():
         try:FILES.navigate(info['path'])
@@ -375,7 +378,7 @@ def windows_action(**params):
 def action_tools():
     return {
       'windows_operator':ActionTool('windows_operator','Find local files and folders using remembered name words. Search query in scope Desktop, Downloads, Documents, Pictures, Music, Videos, here, or computer. Show numbered matches before opening an uncertain name. open opens an exact folder/file in its Windows app. open_match opens one current match by target number or match_id. No uploads, deletions or shell execution.',
-        {'action':{'type':'string','enum':['status','search','open','open_match']},'query':{'type':'string'},'scope':{'type':'string'},'target':{'type':'string'},'match_id':{'type':'string'}},windows_action),
+        {'action':{'type':'string','enum':['status','search','open','open_match','list','open_selected']},'query':{'type':'string'},'scope':{'type':'string'},'target':{'type':'string'},'match_id':{'type':'string'}},windows_action),
       'youtube_control':ActionTool('youtube_control','Control YouTube playback. Search and play the first normal video; play/pause; next/previous video; forward/rewind seconds; set video volume. These controls do not send messages.',
         {'action':{'type':'string','enum':['search_play','play_first','play','pause','next','previous','forward','rewind','set_volume','volume_up','volume_down','mute','unmute']},'query':{'type':'string'},'seconds':{'type':'integer'},'level':{'type':'integer'}},lambda **p:media_controls.control(BROWSER,**p,cancelled=CANCEL.is_set),browser=True),
       'desktop_control':ActionTool('desktop_control','Control the Windows speaker volume or open Wi-Fi/Bluetooth settings. Opening settings does not toggle the radio or disconnect the computer.',

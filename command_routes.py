@@ -37,6 +37,9 @@ def parse(text):
     lower=re.sub(r'[, ]*please$','',t.lower().rstrip('.!?')).strip()
     # Explicit attachment commands keep using the separate upload picker below.
     if not re.search(r'chat\s*gpt|\b(?:attach|upload|select|choose)\b',lower):
+        found=re.fullmatch(r'(?:open|launch|double[ -]?click|play)\s+(?:(?:that|this|the|my)\s+)?(.+?\.(?:pdf|docx?|dxf|dwg|xlsx?|pptx?|stl|step|stp|png|jpe?g|mp[34]|wav)|pdf(?: file)?|word(?: document| file)?|document|drawing|dxf(?: file)?|dwg(?: file)?|spreadsheet)',t.rstrip('.!?'),re.I)
+        if found:return 'windows_operator',{'action':'open','target':found.group(1)}
+        if re.fullmatch(r'(?:show|list)(?: me)? (?:the )?(?:files|folder contents|files here)',lower):return 'windows_operator',{'action':'list'}
         found=re.fullmatch(r'(?:open|play|show)\s+(?:match|result|number|option)\s+(\d+|one|two|three|four|five|six|seven|eight|nine|ten)',lower)
         if found:
             number={'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8,'nine':9,'ten':10}.get(found.group(1),found.group(1))

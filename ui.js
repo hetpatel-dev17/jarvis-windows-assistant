@@ -1,4 +1,4 @@
-const UI_VERSION='2026-11-01-controls-5';
+const UI_VERSION='2026-11-01-controls-6';
 
 const $=id=>document.getElementById(id);let token=location.hash.slice(1)||sessionStorage.getItem('jarvisToken')||'';if(token){sessionStorage.setItem('jarvisToken',token);history.replaceState(null,'',location.pathname)}
 let windowsRevision=-1;let fileRevision=-1,fileWasVisible=false;let taskId='',lastDone='',approvalId='',polling=false,audio=null,audioUrl=null,recorder=null,chunks=[],stream=null,recordTimer=null,voiceRequest=0,transcribing=false;
@@ -37,3 +37,5 @@ if(sessionStorage.getItem('jarvisDraft')){$('prompt').value=sessionStorage.getIt
 
 async function refreshWindows(){let data=await(await api('windows')).json();for(let root of data.roots||[]){if(![...$('windowsScope').options].some(o=>o.value.toLowerCase()===root.toLowerCase())){let option=document.createElement('option');option.value=root;option.textContent=root;$('windowsScope').appendChild(option)}}$('windowsLocation').textContent='Current folder: '+data.directory;$('windowsMessage').textContent=data.message;$('windowsMatches').replaceChildren();for(let match of data.matches){let row=document.createElement('div');row.style.marginBottom='12px';let b=document.createElement('button');b.textContent=match.number+'. '+(match.folder?'Folder: ':'')+match.name;b.onclick=async()=>{try{await post('windows',{action:'open_match',match_id:match.id});await refreshWindows()}catch(e){err(e)}};let path=document.createElement('div');path.className='small';path.style.overflowWrap='anywhere';path.textContent=match.path;row.append(b,path);$('windowsMatches').appendChild(row)}}
 $('windowsSearch').onclick=async()=>{let query=$('windowsQuery').value.trim();if(!query)return;let scope=$('windowsScope').value;try{$('windowsSearch').disabled=true;await runQuickTask('Find '+query+' in '+(scope==='computer'?'computer':scope==='here'?'here':scope));await poll()}catch(e){err(e)}finally{$('windowsSearch').disabled=false}};
+
+$('openSelectedLocal').onclick=()=>post('windows',{action:'open_selected'}).then(refreshWindows).catch(err);

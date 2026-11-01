@@ -58,6 +58,25 @@ class WindowsFilesTest(unittest.TestCase):
     def test_unavailable_drive_has_a_clear_error(self):
         with self.assertRaisesRegex(ValueError,'not currently available'):
             self.operator.control('open',target='Z:')
+    def test_open_pdf_and_word_by_type_and_cad_by_name(self):
+        self.operator.cwd=self.root/'Engineering'
+        self.operator.control('open',target='the PDF')
+        self.assertTrue(self.opened[-1].endswith('Hardware Roadmap.pdf'))
+        (self.root/'Engineering'/'Bracket.dxf').write_text('fixture')
+        self.operator.control('open',target='Bracket.dxf')
+        self.assertTrue(self.opened[-1].endswith('Bracket.dxf'))
+    def test_two_pdfs_need_choice(self):
+        self.operator.cwd=self.root/'Engineering'
+        (self.operator.cwd/'Another.pdf').write_bytes(b'fixture')
+        result=self.operator.control('open',target='PDF')
+        self.assertEqual(len(result['matches']),2)
+        self.assertEqual(self.opened,[])
+    def test_open_folder_lists_its_contents(self):
+        self.operator.control('open',target='Engineering')
+        self.assertEqual(len(self.operator.matches),2)
+    def test_file_open_phrases(self):
+        for phrase in ['Open that PDF','Open the Word document','Open Bracket.dxf','Double click drawing.dwg']:
+            self.assertEqual(command_routes.parse(phrase)[0],'windows_operator')
     def test_user_phrases_reach_the_operator(self):
         for phrase,action in [('Find something like roadmap on Desktop','search'),('Look for hardwre roadmap in Documents','search'),('Open match one','open_match'),('Open folder Engineering','open'),('Open Downloads','open')]:
             result=command_routes.parse(phrase)
