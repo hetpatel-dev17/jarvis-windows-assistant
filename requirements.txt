@@ -11,3 +11,6 @@ websockets==16.1.1
 soundfile==0.14.0
 pycaw==20260927
 comtypes==1.4.17
+
+# Existing free local speech option.
+kokoro-onnx==0.6.1

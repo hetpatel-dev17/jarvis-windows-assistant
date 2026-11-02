@@ -33,9 +33,7 @@ try { $null=Invoke-RestMethod 'http://127.0.0.1:11434/api/tags' -TimeoutSec 2 } 
 }
 & ollama pull qwen2.5:7b-instruct-q4_K_M
 if ($LASTEXITCODE -ne 0) { throw 'Ollama model download failed. Open Ollama, then run setup again.' }
-Write-Host 'Saving the voice key. The key stays on this Windows account.'
-& powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Set-Voice-Key.ps1')
-if ($LASTEXITCODE -ne 0) { throw 'Voice key setup did not finish.' }
+Write-Host 'Free local voice is ready. ElevenLabs is optional; use Set-Voice-Key.ps1 if wanted.'
 $shortcut = (New-Object -ComObject WScript.Shell).CreateShortcut((Join-Path ([Environment]::GetFolderPath('Desktop')) 'Start Jarvis.lnk'))
 $shortcut.TargetPath = Join-Path $PSScriptRoot 'Start Jarvis.cmd'
 $shortcut.WorkingDirectory = $PSScriptRoot

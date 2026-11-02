@@ -28,7 +28,7 @@ class SingleVoice:
         self.error=''
         self.provider=provider or self._provider
         self.play=play or winsound.PlaySound
-        self.settings={'enabled':True,'voice':'JBFqnCBsd6RMkjVDRZzb'}
+        self.settings={'enabled':True,'voice':'af_heart','provider':'local'}
         try:
             self.update(json.loads(self.path.read_text()),save=False)
         except (OSError,ValueError,TypeError):
@@ -36,6 +36,12 @@ class SingleVoice:
 
     def update(self,data,save=True):
         with self.lock:
+            previous=dict(self.settings)
+            if 'provider' in data:
+                if data['provider'] not in ('local','elevenlabs'):raise ValueError('Choose local voice or ElevenLabs.')
+                self.settings['provider']=data['provider']
+            elif 'voice' in data and str(data['voice']) not in ('af_heart','af_bella','af_nicole','bf_emma'):
+                self.settings['provider']='elevenlabs'
             if 'enabled' in data:
                 self.settings['enabled']=bool(data['enabled'])
             if 'voice' in data:
@@ -43,6 +49,9 @@ class SingleVoice:
                 if not re.fullmatch(r'[A-Za-z0-9_-]{1,100}',voice):
                     raise ValueError('Invalid voice selection.')
                 self.settings['voice']=voice
+            if self.settings['provider']=='local' and self.settings['voice'] not in ('af_heart','af_bella','af_nicole','bf_emma'):
+                self.settings['voice']='af_heart'
+            if previous!=self.settings:self.stop()
             if save:
                 self.path.write_text(json.dumps(self.settings),encoding='utf-8')
             if not self.settings['enabled']:
@@ -73,6 +82,9 @@ class SingleVoice:
             return True
 
     def _provider(self,text,voice):
+        if self.settings['provider']=='local':
+            from local_voice import synthesize
+            return synthesize(text,voice)
         from key_store import load_key
         from openjarvis.speech.elevenlabs_tts import ElevenLabsTTSBackend
         return ElevenLabsTTSBackend(api_key=load_key()).synthesize(text,voice_id=voice,output_format='wav').audio
@@ -96,7 +108,7 @@ class SingleVoice:
                         return
                     self.speaking=True
                     self.error=''
-                key=hashlib.sha256((voice+'\0'+chunk).encode()).hexdigest()
+                key=hashlib.sha256((self.settings['provider']+'\0'+voice+'\0'+chunk).encode()).hexdigest()
                 audio=self.cache.get(key)
                 if audio is None:
                     audio=self.provider(chunk,voice)
@@ -129,7 +141,7 @@ class SingleVoice:
         except Exception:
             with self.lock:
                 if generation==self.generation:
-                    self.error='Voice could not play. Check ElevenLabs credits and voice access.'
+                    self.error='Local voice could not play. Check the local voice models in Setup.' if self.settings['provider']=='local' else 'Voice could not play. Check ElevenLabs credits and voice access.'
         finally:
             with self.lock:
                 if generation==self.generation:

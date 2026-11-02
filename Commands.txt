@@ -99,3 +99,18 @@ Opening extra Jarvis tabs does not replay a reply.
 ElevenLabs still uses your voice credits.
 Your AI and speech recognition run locally.
 The microphone uses a button. Jarvis is not always listening.
+
+BROWSER FOLLOW-UPS
+Open Claude.
+Open Google AI Studio.
+Open Google Photos.
+Open example.org.
+Search Kishore Kumar on YouTube.
+Play the first one.
+Play it.
+Scroll down.
+Scroll up.
+Search for holiday on this site.
+Open it.
+
+A site may need manual sign-in. Internal features are tested separately.

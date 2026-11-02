@@ -17,3 +17,5 @@ Recorded during development on Windows, 1 November 2026. Live checks are observa
 Do not replace a missing check with a success claim. Record the trigger, observed result, and remaining limitation when adding evidence.
 
 The [first GitHub Actions run](https://github.com/hetpatel-dev17/jarvis-windows-assistant/actions/runs/41300483793) passed on a separate Windows runner. It covered unit checks, YouTube browser fixtures, the recorded-command-to-file-opening UI fixture, Python/JavaScript syntax, and PowerShell parsing. This does not substitute for account-specific live checks or a full fresh installation.
+
+Browser conversation update, 2 November 2026: live Claude/Google AI Studio/Google Photos opening and scrolling passed. YouTube search followed by “play the first one” and pause completed without another model clarification or approval. Fixtures cover current-result follow-ups, explicit site search, and URL validation. Internal authenticated features of the newly opened services remain separate acceptance tests. The desktop/wake prototype is inactive and backed up locally.
