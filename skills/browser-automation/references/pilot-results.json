@@ -1,0 +1,31 @@
+{
+  "date": "2026-11-02",
+  "scope": "Isolated demo-page evaluation; no saved accounts or hardware. Not a controlled benchmark.",
+  "recommended_next_candidate": "Microsoft Playwright MCP",
+  "live_driver_changed": false,
+  "microsoft": {
+    "framework": "Microsoft Playwright MCP 0.0.84",
+    "model": "qwen2.5:7b-instruct-q4_K_M",
+    "isolated": true,
+    "saved_accounts_used": false,
+    "success": true,
+    "actions": [
+      "browser_click",
+      "browser_type",
+      "browser_click"
+    ],
+    "detail_open": true,
+    "reported_sku": "DEMO-482",
+    "elapsed_seconds": 12.1
+  },
+  "browser_use": {
+    "framework": "browser-use 0.13.14",
+    "model": "qwen2.5:7b-instruct-q4_K_M",
+    "isolated": true,
+    "saved_accounts_used": false,
+    "success": false,
+    "steps": 7,
+    "elapsed_seconds": 74.8
+  },
+  "browser_use_followup": "Paused. Windows reported WinError 225 on a downloaded extension resource during cleanup. No bypass attempted."
+}

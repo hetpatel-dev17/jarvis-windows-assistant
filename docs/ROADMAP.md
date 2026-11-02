@@ -25,3 +25,15 @@ Active tracking: [pipeline acceptance #1](https://github.com/hetpatel-dev17/jarv
 - [ ] Add diagnostics that describe actionable failures in simple words.
 
 Always-on listening, changing network radios, unrestricted system execution, and automatic scheduled briefs are not currently enabled.
+
+
+## Skills workflow agreed on 2 November 2026
+
+1. Browser automation: validate one shared operation layer first.
+2. ChatGPT: verify exact generated-code extraction after existing ask/read behavior.
+3. Claude: verify its own ask/read/extraction path.
+4. Arduino CLI: discover the selected board/port, compile, then review an upload.
+5. Multimedia operation: retain existing tested controls and extend only through checks.
+6. ESP-IDF: separate later toolchain and target verification.
+
+Folders and runtime catalog are in `skills/`. The isolated Microsoft MCP demo passed; real-session adoption is still a browser-stage acceptance item. Hardware pipelines remain disabled. This stage does not resume the desktop EXE work.

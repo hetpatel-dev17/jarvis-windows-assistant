@@ -1,4 +1,4 @@
-const UI_VERSION='2026-11-02-web-2';
+const UI_VERSION='2026-11-02-skills-1';
 
 const $=id=>document.getElementById(id);let token=location.hash.slice(1)||sessionStorage.getItem('jarvisToken')||'';if(token){sessionStorage.setItem('jarvisToken',token);history.replaceState(null,'',location.pathname)}
 let windowsRevision=-1;let fileRevision=-1,fileWasVisible=false;let taskId='',lastDone='',approvalId='',polling=false,audio=null,audioUrl=null,recorder=null,chunks=[],stream=null,recordTimer=null,voiceRequest=0,transcribing=false;
@@ -41,3 +41,6 @@ $('windowsSearch').onclick=async()=>{let query=$('windowsQuery').value.trim();if
 $('openSelectedLocal').onclick=()=>post('windows',{action:'open_selected'}).then(refreshWindows).catch(err);
 
 $('voiceProvider').onchange=async()=>{try{await post('voice/settings',{enabled:$('speakReplies').checked,provider:$('voiceProvider').value,voice:$('voiceProvider').value==='local'?'af_heart':'JBFqnCBsd6RMkjVDRZzb'});await loadVoices();await loadVoiceSettings()}catch(e){err(e)}};
+
+async function loadSkills(){let data=await(await api('skills')).json();$('skillsList').replaceChildren();for(let skill of Array.isArray(data)?data:[]){let row=document.createElement('div');row.style.marginBottom='14px';let title=document.createElement('strong');title.textContent=skill.order+'. '+skill.name+' — '+({'under-test':'Being tested','existing-tested':'Existing checks passed','planned':'Planned'}[skill.status]||skill.status);let detail=document.createElement('p');detail.className='small';detail.textContent=skill.verification;row.append(title,detail);$('skillsList').appendChild(row)}}
+loadSkills().catch(err);

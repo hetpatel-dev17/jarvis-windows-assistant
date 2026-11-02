@@ -122,3 +122,11 @@ The browser UI supports named site opening for Claude, Google AI Studio, Google 
 Live checks opened the three named sites and completed YouTube search → play the first one → pause without a model clarification or extra approval. Opening a site does not prove that all signed-in features inside it work. Those remain separate pipeline tests.
 
 The unfinished desktop/wake prototype is set aside. This update targets the browser UI only.
+
+## Project skills: browser first
+
+The project-owned `skills/` directory separates browser automation, ChatGPT, Claude, Arduino CLI, multimedia operation, and ESP-IDF. The [catalog](skills/catalog.json) records the development order and actual enabled/verification states. Jarvis can load these instructions through its skills tool; the web UI shows **Skills and verification**.
+
+The shared browser skill is first. Existing deterministic controls and Playwright workflows stay active. A separate Microsoft Playwright MCP 0.0.84 + current Ollama pilot completed a generic click/type/read demo and independently verified the result. The candidate is not connected to the signed-in browser yet. Browser Use was also evaluated, failed its trial, and was paused after Windows reported a security block on a downloaded extension resource. See the [comparison and evidence](skills/browser-automation/references/tool-evaluation.md).
+
+Arduino CLI and ESP-IDF are planned and have no execution tools here. No firmware has been compiled or flashed. The intended later pipeline is website answer -> exact code files -> compile for a known board -> selected COM port -> reviewed upload -> separate hardware/serial test. Each link must be verified before that full chain is enabled.

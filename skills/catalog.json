@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "development_order": [
+    "browser-automation",
+    "chatgpt",
+    "claude",
+    "arduino-cli",
+    "multimedia-operation",
+    "esp-idf"
+  ],
+  "skills": [
+    {
+      "id": "browser-automation",
+      "name": "Browser automation",
+      "status": "under-test",
+      "enabled": true,
+      "tools": [
+        "website",
+        "browser_control",
+        "search_web"
+      ],
+      "verification": "Existing browser baseline tested. Microsoft Playwright MCP + local Ollama passed an isolated click/type/read demo. Live integration is not enabled yet."
+    },
+    {
+      "id": "chatgpt",
+      "name": "ChatGPT",
+      "status": "existing-tested",
+      "enabled": true,
+      "tools": [
+        "chatgpt"
+      ],
+      "verification": "Prompt/reply, chat history, and one approved PDF upload plus Send tested. Firmware extraction is not verified."
+    },
+    {
+      "id": "claude",
+      "name": "Claude",
+      "status": "planned",
+      "enabled": false,
+      "tools": [],
+      "verification": "Website opening tested only. Prompt submission, answer extraction and code transfer are not verified."
+    },
+    {
+      "id": "arduino-cli",
+      "name": "Arduino CLI",
+      "status": "planned",
+      "enabled": false,
+      "tools": [],
+      "verification": "No toolchain, board, port, compilation or upload has been verified."
+    },
+    {
+      "id": "multimedia-operation",
+      "name": "Multimedia operation",
+      "status": "existing-tested",
+      "enabled": true,
+      "tools": [
+        "youtube_control",
+        "desktop_control",
+        "windows_operator"
+      ],
+      "verification": "YouTube controls, volume and selected local file opening tested. Broader app coverage remains partial."
+    },
+    {
+      "id": "esp-idf",
+      "name": "ESP-IDF",
+      "status": "planned",
+      "enabled": false,
+      "tools": [],
+      "verification": "No ESP-IDF environment, target, build or flash pipeline has been verified."
+    }
+  ]
+}
