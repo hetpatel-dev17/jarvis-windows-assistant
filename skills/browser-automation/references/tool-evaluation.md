@@ -44,3 +44,7 @@ Machine-readable observations are in `pilot-results.json`.
 - A separately verified path to the existing browser session, then a live owner-approved test.
 
 No candidate is a guarantee of flawless operation on every website. The local model, page state, login requirements, and action verification remain part of the pipeline.
+
+## Subsequent live acceptance
+
+The owner then approved a ten-site live test. The final pass verified six complete workflows, two partial workflows and two incomplete workflows. ChatGPT and Claude each received one approved test prompt and returned an actual reply. The normal Jarvis driver was restored after the candidate temporarily owned the saved browser. This result is not ready for universal adoption. Details: [live-check-notes.md](live-check-notes.md).

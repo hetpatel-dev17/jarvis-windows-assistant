@@ -19,7 +19,7 @@
         "browser_control",
         "search_web"
       ],
-      "verification": "Existing browser baseline tested. Microsoft Playwright MCP + local Ollama passed an isolated click/type/read demo. Live integration is not enabled yet."
+      "verification": "Existing baseline tested. Live MCP ten-site trial: 6 complete, 2 partial, 2 incomplete. Candidate remains experimental; normal driver retained."
     },
     {
       "id": "chatgpt",
@@ -34,10 +34,10 @@
     {
       "id": "claude",
       "name": "Claude",
-      "status": "planned",
+      "status": "pilot-tested",
       "enabled": false,
       "tools": [],
-      "verification": "Website opening tested only. Prompt submission, answer extraction and code transfer are not verified."
+      "verification": "One live MCP test message and completed reply passed. A production Claude adapter and code extraction are not enabled."
     },
     {
       "id": "arduino-cli",

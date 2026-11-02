@@ -1,0 +1,96 @@
+{
+  "date": "2026-11-02",
+  "framework": "Microsoft Playwright MCP 0.0.84",
+  "model": "qwen2.5:7b-instruct-q4_K_M",
+  "scope": "Final ten-site pass after shared-driver diagnostics. Real signed-in browser used with one controller at a time.",
+  "passed": 6,
+  "partial": 2,
+  "incomplete": 2,
+  "messages_sent_once": [
+    "ChatGPT",
+    "Claude"
+  ],
+  "messages_identity": "Existing signed-in accounts, not anonymous identities.",
+  "purchases": 0,
+  "personal_files_uploaded": 0,
+  "jarvis_web_restored": true,
+  "results": [
+    {
+      "site": "Amazon",
+      "status": "partial",
+      "observation": "Search results opened for USB C cable. The agent repeated typing instead of opening a product.",
+      "elapsed_seconds": 27.3,
+      "message_send_attempted": false
+    },
+    {
+      "site": "Flipkart",
+      "status": "passed",
+      "observation": "Searched for wireless mouse and opened a product detail.",
+      "elapsed_seconds": 18.6,
+      "message_send_attempted": false
+    },
+    {
+      "site": "YouTube",
+      "status": "passed",
+      "observation": "Searched for Arduino beginner tutorial, opened a result, and confirmed playback. Paused afterward.",
+      "elapsed_seconds": 23.5,
+      "message_send_attempted": false
+    },
+    {
+      "site": "ChatGPT",
+      "status": "passed",
+      "observation": "Sent the preapproved test question once. A completed assistant reply containing the answer appeared.",
+      "elapsed_seconds": 15.6,
+      "message_send_attempted": true
+    },
+    {
+      "site": "Claude",
+      "status": "passed",
+      "observation": "Sent the preapproved playful test question once. A completed assistant reply appeared.",
+      "elapsed_seconds": 12.7,
+      "message_send_attempted": true
+    },
+    {
+      "site": "Wikipedia",
+      "status": "incomplete",
+      "observation": "Search was not completed. The scoped main-page observation omitted the global search control.",
+      "elapsed_seconds": 9.1,
+      "message_send_attempted": false
+    },
+    {
+      "site": "GitHub",
+      "status": "incomplete",
+      "observation": "Repository search was not completed. The scoped main-page observation omitted global search controls.",
+      "elapsed_seconds": 8.9,
+      "message_send_attempted": false
+    },
+    {
+      "site": "DuckDuckGo",
+      "status": "passed",
+      "observation": "Searched ESP-IDF documentation and opened an official Espressif documentation page.",
+      "elapsed_seconds": 17.5,
+      "message_send_attempted": false
+    },
+    {
+      "site": "Google Translate",
+      "status": "partial",
+      "observation": "Good morning was entered. The expected Spanish output was not independently confirmed.",
+      "elapsed_seconds": 19.2,
+      "message_send_attempted": false
+    },
+    {
+      "site": "Python documentation",
+      "status": "passed",
+      "observation": "Opened documentation from python.org, then opened the Python Tutorial.",
+      "elapsed_seconds": 8.7,
+      "message_send_attempted": false
+    }
+  ],
+  "limitations": [
+    "Experimental test adapter; not enabled as the default Jarvis browser driver.",
+    "Earlier diagnostic runs exposed reference handling, context size, and new-tab handoff problems.",
+    "New-tab handoff and compact numeric controls improved the final run.",
+    "The shared observation layer still omits some global controls and the model can repeat incorrect actions.",
+    "Raw snapshots and private chat/session identifiers are excluded from this report."
+  ]
+}

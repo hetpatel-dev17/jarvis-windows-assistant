@@ -5,7 +5,7 @@ description: Planned Claude website workflow for questions, actual reply readbac
 
 # Claude
 
-Status: planned. Shared browser navigation can open Claude. A verified Claude-specific ask/read/code-extraction adapter is not installed.
+Status: live pilot tested, not enabled as a production adapter. A single owner-approved MCP test message and actual reply passed. A Claude-specific ask/read/code-extraction adapter is not installed.
 
 When this stage is selected, verify one manually signed-in account, one question, one submission, and the actual completed reply. Then verify exact code-block extraction separately. Preserve code formatting and distinguish explanation from source files.
 
