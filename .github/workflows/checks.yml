@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install fixture test dependencies
-        run: python -m pip install playwright==1.63.0
+        run: python -m pip install playwright==1.63.0 httpx==0.28.1
       - name: Install fixture browser
         run: python -m playwright install chromium
       - name: Unit checks
