@@ -23,6 +23,7 @@ from file_browser import FileBrowser
 from windows_operator import WindowsOperator
 from skill_registry import SkillRegistry
 from download_workflow import Downloads
+from wake_listener import WakeListener
 
 ROOT = Path(__file__).resolve().parent
 DATA = Path(os.environ['LOCALAPPDATA']) / 'OpenJarvis'
@@ -528,7 +529,7 @@ def health():
 @app.get('/api/status')
 def status():
     with LOCK:
-        return {**json.loads(json.dumps(TASK)),'browser_mode':browser_session.mode(),'voice':VOICE.status(),'files_revision':FILES.revision,'windows_revision':WINDOWS.revision,'ui_version':UI_VERSION}
+        return {**json.loads(json.dumps(TASK)),'browser_mode':browser_session.mode(),'voice':VOICE.status(),'vocals':VOCALS.status(),'files_revision':FILES.revision,'windows_revision':WINDOWS.revision,'ui_version':UI_VERSION}
 
 
 class ChatInput(BaseModel):
@@ -679,6 +680,41 @@ STT_LOCK=threading.Lock()
 STT=None
 
 
+def transcribe_local(body, format='wav'):
+    global STT
+    with STT_LOCK:
+        if STT is None:
+            from openjarvis.speech.faster_whisper import FasterWhisperBackend
+            STT=FasterWhisperBackend(model_size=str(DATA/'models'/'whisper-base'),device='cpu',compute_type='int8')
+        return STT.transcribe(body,format=format).text
+
+
+def spoken_command(text):
+    # Voice uses the same task lock, approval ID and tools as typing.
+    normalized=text.strip().casefold().rstrip('.!?')
+    with LOCK:
+        pending=TASK.get('approval')
+        if pending and normalized in ('yes','yes approve','approve','confirm','no','cancel','decline'):
+            return approval(ApprovalInput(id=pending['id'],accept=normalized in ('yes','yes approve','approve','confirm')))
+    if normalized in ('stop','stop jarvis','cancel task'):
+        return stop()
+    return chat(ChatInput(text=text))
+
+
+VOCALS=WakeListener(spoken_command,transcribe_local,VOICE,data_dir=DATA,
+    busy=lambda:TASK['status']=='running' and not TASK.get('approval'))
+
+
+@app.post('/api/vocals/start')
+def vocals_start():
+    return VOCALS.start()
+
+
+@app.post('/api/vocals/stop')
+def vocals_stop():
+    return VOCALS.stop()
+
+
 @app.post('/api/transcribe')
 async def transcribe(request:Request):
     body=bytearray()
@@ -689,12 +725,7 @@ async def transcribe(request:Request):
     if not body:
         raise HTTPException(400,'No recording received.')
     def work():
-        global STT
-        with STT_LOCK:
-            if STT is None:
-                from openjarvis.speech.faster_whisper import FasterWhisperBackend
-                STT=FasterWhisperBackend(model_size=str(DATA/'models'/'whisper-base'),device='cpu',compute_type='int8')
-            return STT.transcribe(bytes(body),format='webm').text
+        return transcribe_local(bytes(body),'webm')
     import asyncio
     try:
         return {'text':await asyncio.to_thread(work)}

@@ -26,6 +26,8 @@ $env:HF_HOME = Join-Path $dataDir 'models'
 Write-Host 'Getting the local speech recognition model...'
 & $pythonExe (Join-Path $PSScriptRoot 'setup_runtime.py')
 if ($LASTEXITCODE -ne 0) { throw 'Speech model download failed.' }
+& $pythonExe (Join-Path $PSScriptRoot 'setup_wake.py')
+if ($LASTEXITCODE -ne 0) { throw 'Wake model download failed.' }
 Write-Host 'Getting the default local AI model. This can take a while...'
 try { $null=Invoke-RestMethod 'http://127.0.0.1:11434/api/tags' -TimeoutSec 2 } catch {
     Start-Process -FilePath (Get-Command ollama).Source -ArgumentList 'serve' -WindowStyle Hidden
@@ -38,4 +40,8 @@ $shortcut = (New-Object -ComObject WScript.Shell).CreateShortcut((Join-Path ([En
 $shortcut.TargetPath = Join-Path $PSScriptRoot 'Start Jarvis.cmd'
 $shortcut.WorkingDirectory = $PSScriptRoot
 $shortcut.Save()
+$voiceShortcut = (New-Object -ComObject WScript.Shell).CreateShortcut((Join-Path ([Environment]::GetFolderPath('Desktop')) 'Jarvis Vocals.lnk'))
+$voiceShortcut.TargetPath = Join-Path $PSScriptRoot 'Start Vocals.cmd'
+$voiceShortcut.WorkingDirectory = $PSScriptRoot
+$voiceShortcut.Save()
 Write-Host 'Ready. Open Start Jarvis on the Desktop. Follow the sign-in steps.'

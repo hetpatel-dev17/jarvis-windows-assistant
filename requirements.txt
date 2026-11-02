@@ -14,3 +14,5 @@ comtypes==1.4.17
 
 # Existing free local speech option.
 kokoro-onnx==0.6.1
+vosk==0.3.45
+sounddevice==0.5.6

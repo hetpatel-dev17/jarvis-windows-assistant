@@ -1,3 +1,4 @@
+param([switch]$NoBrowser)
 $ErrorActionPreference = 'Stop'
 $appDir = $PSScriptRoot
 $projectDir = Split-Path (Split-Path $appDir -Parent) -Parent
@@ -49,5 +50,5 @@ if (-not $ready) {
 }
 $tokenPath=Join-Path $dataDir 'local-token.txt'
 $localToken=[System.IO.File]::ReadAllText($tokenPath).Trim()
-Start-Process ('http://127.0.0.1:8766/#'+$localToken)
+if (-not $NoBrowser) { Start-Process ('http://127.0.0.1:8766/#'+$localToken) }
 $localToken=$null

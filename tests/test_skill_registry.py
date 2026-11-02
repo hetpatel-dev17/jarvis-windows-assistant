@@ -8,7 +8,7 @@ class SkillRegistryTest(unittest.TestCase):
     def setUp(self):self.skills=SkillRegistry()
     def test_all_requested_skills_have_instructions(self):
         entries=self.skills.listing()
-        self.assertEqual([x['id'] for x in entries],['browser-automation','chatgpt','claude','arduino-cli','multimedia-operation','esp-idf'])
+        self.assertEqual([x['id'] for x in entries],['browser-automation','chatgpt','claude','arduino-cli','multimedia-operation','esp-idf','jarvis-vocals'])
         for entry in entries:
             loaded=self.skills.load(entry['id'])
             self.assertTrue(loaded['instructions'].startswith('---\n'))

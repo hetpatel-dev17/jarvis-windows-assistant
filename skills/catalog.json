@@ -6,7 +6,8 @@
     "claude",
     "arduino-cli",
     "multimedia-operation",
-    "esp-idf"
+    "esp-idf",
+    "jarvis-vocals"
   ],
   "skills": [
     {
@@ -66,6 +67,14 @@
       "enabled": false,
       "tools": [],
       "verification": "No ESP-IDF environment, target, build or flash pipeline has been verified."
+    },
+    {
+      "id": "jarvis-vocals",
+      "name": "Jarvis vocals",
+      "status": "under-test",
+      "enabled": true,
+      "tools": [],
+      "verification": "Native voice panel, local wake listener and shared task/approval pipeline. Real owner voice acceptance pending. Calls are not implemented."
     }
   ]
 }
