@@ -28,12 +28,20 @@ class WakeListener:
         self.path=self.data/'wake-settings.json';self.on_command=on_command
         self.transcribe=transcribe;self.voice=voice;self.log=log
         self.busy=busy
+        self.mode='windows';self.awake=False;self.wake_sequence=0
         self.enabled=False;self.phase='off';self.error='';self.thread=None;self.stop_event=threading.Event()
         self.lock=threading.RLock();self.last_text=''
         try:self.requested=bool(json.loads(self.path.read_text()).get('enabled',False))
         except (OSError,ValueError):self.requested=False
     def status(self):
-        with self.lock:return {'enabled':self.enabled,'phase':self.phase,'error':self.error,'last_text':self.last_text,'phrases':PHRASES[:-1]}
+        with self.lock:return {'enabled':self.enabled,'phase':self.phase,'error':self.error,'last_text':self.last_text,'phrases':PHRASES[:-1],'mode':self.mode,'awake':self.awake,'wake_sequence':self.wake_sequence}
+    def sleep(self):
+        with self.lock:self.awake=False;self.phase='listening' if self.enabled else 'off'
+        return self.status()
+    def activate(self):
+        with self.lock:
+            self.awake=True;self.wake_sequence+=1;self.phase='windows dictation'
+        return self.status()
     def save(self):
         self.data.mkdir(parents=True,exist_ok=True)
         self.path.write_text(json.dumps({'enabled':self.enabled}),encoding='utf-8')
@@ -48,7 +56,7 @@ class WakeListener:
             self.thread.start();return self.status()
     def stop(self):
         self.stop_event.set()
-        with self.lock:self.enabled=False;self.phase='off';self.save()
+        with self.lock:self.enabled=False;self.awake=False;self.phase='off';self.save()
         if self.thread and self.thread is not threading.current_thread():self.thread.join(timeout=1)
         return self.status()
     def _run(self,stop):
@@ -71,6 +79,16 @@ class WakeListener:
                     try:chunk=packets.get(timeout=.2)
                     except queue.Empty:continue
                     now=time.monotonic()
+                    if self.mode=='windows':
+                        if self.awake:
+                            detector.Reset();self.phase='windows dictation';continue
+                        if self.voice.status()['speaking'] or self.busy():
+                            detector.Reset();continue
+                        if detector.AcceptWaveform(chunk):
+                            heard=json.loads(detector.Result()).get('text','').strip()
+                            if heard in ('hey jarvis','hello jarvis','open jarvis','jarvis'):
+                                self.last_text=heard;self.activate();detector.Reset()
+                        continue
                     if self.voice.status()['speaking'] or self.busy():
                         pre.clear();recording=[];detector.Reset();cooldown=now+.65
                         if follow_until:follow_until=now+12

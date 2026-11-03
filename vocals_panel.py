@@ -11,6 +11,7 @@ from pathlib import Path
 from tkinter import scrolledtext
 
 import httpx
+from windows_dictation import WindowsTyping, WindowsEditor, interpret
 
 BASE='http://127.0.0.1:8766'
 
@@ -24,7 +25,9 @@ def main():
     events=queue.Queue(); closed=threading.Event()
     root=tk.Tk();root.title('Jarvis vocals');root.geometry('450x680');root.minsize(410,580)
     root.configure(bg='#090f20')
-    state={'phase':'connecting','enabled':False,'approval':None,'last_reply':'','last_text':'','angle':0,'busy':False}
+    state={'phase':'connecting','enabled':False,'approval':None,'last_reply':'','last_text':'','angle':0,'busy':False,
+           'awake':False,'wake_sequence':None,'pending':False,'waiting_id':None,'resume_at':None,
+           'draft':'','changed':0,'consumed':None,'dictation':False,'blocked':False}
     def request(path,body=None):
         with httpx.Client(timeout=8,trust_env=False) as client:
             response=client.get(BASE+'/api/'+path,headers=headers) if body is None else client.post(BASE+'/api/'+path,headers=headers,json=body)
@@ -42,7 +45,7 @@ def main():
     tk.Label(root,text='YOUR VOICE. YOUR WORKFLOW.',font=('Segoe UI',9),bg='#090f20',fg='#718bb7').pack()
     canvas=tk.Canvas(root,width=400,height=195,bg='#090f20',highlightthickness=0);canvas.pack()
     phase=tk.Label(root,text='Connecting…',font=('Segoe UI',14),bg='#090f20',fg='#66e1ef');phase.pack()
-    hint=tk.Label(root,text='Say “Hey Jarvis”. Pause. Then speak your task.',font=('Segoe UI',10),bg='#090f20',fg='#b2c5e5',wraplength=410);hint.pack(pady=8)
+    hint=tk.Label(root,text='Say “Hey Jarvis”, then dictate. End with “Run task”.',font=('Segoe UI',10),bg='#090f20',fg='#b2c5e5',wraplength=410);hint.pack(pady=8)
     controls=tk.Frame(root,bg='#090f20');controls.pack(pady=5)
     def button(parent,text,command,color='#17324e'):
         return tk.Button(parent,text=text,command=command,bg=color,fg='white',activebackground='#285378',relief='flat',padx=12,pady=7,font=('Segoe UI',10))
@@ -57,12 +60,43 @@ def main():
     history=scrolledtext.ScrolledText(root,height=9,bg='#0e192e',fg='#d3e4ff',font=('Segoe UI',10),relief='flat',wrap='word',state='disabled');history.pack(fill='both',expand=True,padx=18,pady=8)
     def log(text):
         history.configure(state='normal');history.insert('end',text+'\n\n');history.see('end');history.configure(state='disabled')
-    entry=tk.Entry(root,bg='#182640',fg='white',insertbackground='white',font=('Segoe UI',11));entry.pack(fill='x',padx=18,pady=5)
+    entry=WindowsEditor(root);entry.pack(fill='x',padx=18,pady=5)
+    typing=WindowsTyping(root,entry)
+    def dismiss():
+        if state['dictation']:
+            try:typing.dismiss()
+            except RuntimeError:pass
+        state['dictation']=False
+    def begin_dictation():
+        if state['busy'] and not state['approval']:return
+        state['blocked']=False
+        entry.configure(state='normal')
+        try:
+            typing.start();state['dictation']=True
+            hint.configure(text='Wait for Windows “Listening”. End your command with “Run task”.')
+        except Exception as e:
+            hint.configure(text=str(e));log(str(e))
+    def sleep_session():
+        dismiss();state['awake']=False;state['resume_at']=None
+        entry.delete(0,'end');entry.configure(state='readonly');root.focus_set();act('vocals/sleep')
+        hint.configure(text='Sleeping. Say “Hey Jarvis” to begin again.')
     def send(event=None):
         text=entry.get().strip()
-        if text:act('chat',{'text':text});log('You: '+text);entry.delete(0,'end')
+        action,parsed=interpret(text)
+        if action=='sleep':sleep_session();return
+        if action=='submit':text=parsed
+        if not text or state['pending'] or (state['busy'] and not state['approval']):return
+        state['pending']=True;state['consumed']=entry.get();dismiss();entry.configure(state='readonly')
+        log('You: '+text)
+        def dispatch():
+            try:events.put(('submitted',request('vocals/command',{'text':text})))
+            except Exception as e:events.put(('submit_error',str(e)))
+        threading.Thread(target=dispatch,daemon=True).start()
     entry.bind('<Return>',send)
     button(root,'Run typed task',send).pack(pady=(0,12))
+    buttons=tk.Frame(root,bg='#090f20');buttons.pack(pady=(0,10))
+    button(buttons,'Windows typing / resume',lambda:(act('vocals/activate') if not state['awake'] else begin_dictation())).pack(side='left',padx=3)
+    button(buttons,'Go to sleep',sleep_session).pack(side='left',padx=3)
     def poll():
         while not closed.is_set():
             try: events.put(('status',request('status')))
@@ -72,13 +106,34 @@ def main():
         while not events.empty():
             kind,value=events.get_nowait()
             if kind=='error':hint.configure(text=value);continue
+            if kind=='submit_error':
+                state['pending']=False;state['blocked']=True;state['resume_at']=None
+                entry.configure(state='normal');log('Not repeated. Check the task before resuming: '+value);hint.configure(text=value);continue
+            if kind=='submitted':
+                state['pending']=False;state['waiting_id']=value.get('id');entry.configure(state='normal');entry.delete(0,'end')
+                state['resume_at']=time.monotonic()+2;continue
             vocals=value.get('vocals',{});state['enabled']=vocals.get('enabled',False)
+            state['awake']=vocals.get('awake',False);state['busy']=value['status']=='running'
+            sequence=vocals.get('wake_sequence',0)
+            if state['wake_sequence'] is None:state['wake_sequence']=sequence
+            elif sequence!=state['wake_sequence']:
+                state['wake_sequence']=sequence
+                if state['awake']:root.after(200,begin_dictation)
             previous=state['phase']
             state['phase']='speaking' if value.get('voice',{}).get('speaking') else 'approval' if value.get('approval') else 'working' if value['status']=='running' else vocals.get('phase','off')
             phase.configure(text=state['phase'].replace('_',' ').capitalize())
-            hint.configure(text=vocals.get('error') or value.get('voice',{}).get('error') or ('Say “Hey Jarvis”. Pause. Then speak your task.' if state['enabled'] else 'Microphone is off. Enable listening when ready.'))
+            if vocals.get('error') or value.get('voice',{}).get('error'):hint.configure(text=vocals.get('error') or value['voice']['error'])
             mic.configure(text='Pause listening' if state['enabled'] else 'Enable listening')
             state['approval']=value.get('approval')
+            speaking=value.get('voice',{}).get('speaking',False)
+            if speaking or (state['busy'] and not state['approval']):
+                dismiss();entry.configure(state='readonly');state['resume_at']=time.monotonic()+2
+            elif not state['pending']:
+                entry.configure(state='normal' if state['awake'] else 'readonly')
+                if state['awake'] and state['resume_at'] and time.monotonic()>state['resume_at']:
+                    state['resume_at']=None
+                    if not state['waiting_id'] or value['id']==state['waiting_id']:
+                        state['waiting_id']=None;begin_dictation()
             if state['approval']:
                 review_text.configure(text=state['approval']['description']);review.pack(before=history,fill='x',padx=18)
             else:review.pack_forget()
@@ -88,6 +143,11 @@ def main():
             if text and text!=state['last_text']:log('You: '+text);state['last_text']=text
             if value.get('id') and value['id']!=state['last_reply'] and value['status'] in ('done','error'):
                 state['last_reply']=value['id'];log('Jarvis: '+(value.get('reply') or value.get('error','')))
+        draft=entry.get()
+        if draft!=state['draft']:state['draft']=draft;state['changed']=time.monotonic()
+        if state['awake'] and not state['blocked'] and not state['pending'] and draft!=state['consumed'] and time.monotonic()-state['changed']>1:
+            action,_=interpret(draft)
+            if action in ('submit','sleep'):state['consumed']=draft;send()
         canvas.delete('all');state['angle']+=.05
         active=state['phase'] not in ('off','listening','connecting')
         color='#b5a1ff' if state['phase']=='speaking' else '#58e8ef' if active else '#376585'
@@ -102,13 +162,14 @@ def main():
         root.after(40,tick)
     def close():
         closed.set()
+        dismiss()
         try:request('vocals/stop',{})
         except Exception:pass
         root.destroy();singleton.close()
     root.protocol('WM_DELETE_WINDOW',close)
     threading.Thread(target=poll,daemon=True).start();tick()
     # Starting this explicitly named voice app enables the visible microphone.
-    act('vocals/start')
+    if not any(flag in __import__('sys').argv for flag in ('--smoke','--paused')):act('vocals/start')
     if '--smoke' in __import__('sys').argv:root.after(2500,close)
     root.mainloop()
 

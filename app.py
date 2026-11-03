@@ -715,6 +715,21 @@ def vocals_stop():
     return VOCALS.stop()
 
 
+@app.post('/api/vocals/sleep')
+def vocals_sleep():
+    return VOCALS.sleep()
+
+
+@app.post('/api/vocals/activate')
+def vocals_activate():
+    return VOCALS.activate()
+
+
+@app.post('/api/vocals/command')
+def vocals_command(data:ChatInput):
+    return spoken_command(data.text)
+
+
 @app.post('/api/transcribe')
 async def transcribe(request:Request):
     body=bytearray()

@@ -1,29 +1,27 @@
-# Jarvis vocals — testing version
+# Jarvis vocals â€” Windows voice typing pilot
 
-Open **Jarvis Vocals** on the Windows Desktop, or run **Start Vocals.cmd**. A native panel opens without needing the Jarvis webpage. Keep the panel running; minimizing keeps listening active. Closing stops the microphone. It does not start with Windows automatically.
+Updated 3 November 2026. The default desktop command path now uses Windows + H voice typing. Vosk is used only for wake detection. Ollama remains the reasoning engine. Whisper is still available to the older web recording button, but it is not called for desktop wake or Windows-dictated commands.
 
-1. Say **Hey Jarvis**.
-2. Wait for the greeting.
-3. Say **Open YouTube**, **Open Desktop**, or another existing task.
-4. Stop speaking. Jarvis detects the pause and sends the task.
+## Use
 
-Also try **Hey Jarvis, open YouTube** in one sentence. The panel shows recognized words and replies. A greeting leaves a 12-second command window. Recognition is currently English; noise and accent affect accuracy.
+Open Jarvis Vocals. Enable listening if paused. Say **Hey Jarvis**, **Hello Jarvis**, or **Open Jarvis**, then pause. Jarvis focuses its native Windows text box and requests Windows voice typing. Wait for the Windows **Listening** indicator. Dictate a command and end with **Run task**. For example: **Open YouTube. Run task.** The suffix is removed before submission. Pauses alone never submit drafts. A one-second stable-text check lets Windows finish punctuation before the marker is consumed.
 
-The animated ring changes for listening, recording, understanding, working and speaking. The current female Kokoro voice remains in use. No ElevenLabs key is needed. Vosk detects the wake locally; Whisper transcribes locally. Audio buffers stay in memory. The panel does not create a second browser controller or replay speech.
+The conversation session remains awake between tasks. The panel requests dictation again after work and spoken output finish. Say **Go to sleep** as a separate utterance to return to wake-only listening. There is no 12-second follow-up timeout in this mode. Use **Windows typing / resume** if Windows has paused dictation. Windows itself can time out or reject background focus; this software cannot guarantee a permanent Windows microphone session.
 
-**Pause listening** turns off microphone capture. **Stop task / voice** stops work and spoken output. Listening is suspended during work and speech, so voice interruption is not supported yet. Use the button then. Other speaker audio can trigger a voice assistant; headphones help around videos. This is not speaker identification.
+Run task and Go to sleep are reserved control phrases. Do not use those phrases as literal command endings in this pilot. A pending message/upload approval can receive **Approve. Run task.** or **Decline. Run task.** Existing exact-action review is preserved. The Stop task / voice button remains available during work; barge-in is not supported.
 
-Existing message/upload review is preserved. Review the complete action in the panel. Click Approve/Decline, or wake Jarvis and say approve/decline for the current pending review. No approval applies to future unrelated actions.
+The editing surface is now the standard native Windows EDIT control, hosted inside the panel. It is no longer a Tk-only entry. The application checks that its own window is foreground before issuing its voice-typing shortcut. If Windows refuses foreground activation, click the Jarvis text box and use Windows + H. It will not issue the shortcut into another app. No global keyboard hook, browser controller, or clipboard reader was added.
 
-This interface exposes existing capabilities. It does not add phone calls, unsupported website operations, Arduino/ESP-IDF execution, or guaranteed uninterrupted browser tasks. No EXE installer was built for this milestone.
+Windows dictation requires internet and uses Microsoft speech processing. Windows manages its microphone, language, punctuation, noise suppression and permissions. Jarvis does not change Windows privacy settings. If Windows asks for setup or permission, handle that directly. Do not claim perfect echo suppression or speaker identification.
 
-## Evidence — 2 November 2026
+On Go to sleep the editor is locked and dictation dismissal is attempted. Confirm the Windows indicator stopped; say Windows' **Stop listening** if it remains active. Closing Jarvis stops its Vosk listener and attempts to dismiss dictation, but Jarvis does not own the Windows service. Pause listening disables Jarvis wake capture; use Windows' own stop control to stop Windows capture too.
 
-- 28 unit checks passed, including wake-prefix filtering and microphone-off initialization.
-- Native Tk panel opened and closed in a smoke test.
-- Authenticated start/status/stop checks reached listening with no microphone error, then off.
-- Offline generated female speech, “Hey Jarvis. Open YouTube.”, triggered the actual Vosk model. Actual local Whisper returned “Hey Jarvis, open YouTube.” and wake verification extracted “open YouTube.” No website action was dispatched by this sample test.
-- Computer-use visual inspection confirmed the panel and Listening state.
-- Owner voice, accent, wake/follow-up timing, false activations and end-to-end spoken tasks remain to be tested. Do not label fully verified until those pass.
+## Verification
 
-Fresh setup installs pinned vosk/sounddevice dependencies and downloads the fixed Apache-2.0 Vosk small English model with SHA-256 validation. Whisper and Kokoro assets stay outside Git. Sources: [Vosk models](https://alphacephei.com/vosk/models), [sounddevice raw streams](https://python-sounddevice.readthedocs.io/en/0.5.3/api/raw-streams.html).
+- 30 unit checks passed, including explicit end-marker parsing, draft preservation rules, separate sleep intent, wake-prefix checks and awake/sleep session state.
+- Native Windows editor and panel smoke test opened and closed without an exception.
+- Python syntax passed.
+- Earlier 2 November tests proved local Vosk detection on generated speech and actual microphone startup. Those do not prove the new Windows dictation handoff.
+- Windows + H live transcription, automatic reopening after browser work, echo handling and the owner's voice remain pending. The agent did not trigger the Windows-key shortcut during verification. This is a pilot, not a verified continuous Windows dictation implementation.
+
+[Microsoft voice typing guide](https://support.microsoft.com/en-us/accessibility/windows/use-voice-typing-to-talk-instead-of-type-on-your-pc) documents the focused-text-box requirement, internet use and Windows controls. The existing browser, downloads and message capabilities are unchanged. Calls remain unavailable.

@@ -74,7 +74,7 @@
       "status": "under-test",
       "enabled": true,
       "tools": [],
-      "verification": "Native voice panel, local wake listener and shared task/approval pipeline. Real owner voice acceptance pending. Calls are not implemented."
+      "verification": "Windows voice typing pilot; local Vosk wake only, native Windows editor and persistent session. 30 unit checks passed. Live Win+H and owner voice acceptance pending."
     }
   ]
 }
