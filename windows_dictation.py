@@ -29,6 +29,7 @@ class WindowsEditor:
         self.user.MoveWindow.argtypes=[w.HWND,ctypes.c_int,ctypes.c_int,ctypes.c_int,ctypes.c_int,w.BOOL]
         self.hwnd=self.user.CreateWindowExW(0,'EDIT','',0x50000000|0x00800000|0x80,0,0,400,36,self.frame.winfo_id(),None,None,None)
         if not self.hwnd:raise OSError(ctypes.get_last_error(),'Windows text box could not be created.')
+        self.user.SendMessageW(self.hwnd,0xc5,1000000,0)
         gdi=ctypes.WinDLL('gdi32');gdi.GetStockObject.restype=w.HANDLE
         self.user.SendMessageW(self.hwnd,0x30,gdi.GetStockObject(17),1)
         self.frame.bind('<Configure>',lambda e:self.user.MoveWindow(self.hwnd,0,0,e.width,e.height,True))
@@ -49,6 +50,7 @@ class WindowsEditor:
         self.user.GetWindowTextW(self.hwnd,buffer,count+1)
         return buffer.value
     def delete(self,*unused):self.user.SetWindowTextW(self.hwnd,'')
+    def set_text(self,text):self.user.SetWindowTextW(self.hwnd,text)
     def configure(self,state='normal',**unused):self.user.SendMessageW(self.hwnd,0xcf,state=='readonly',0)
     def focus_set(self):self.user.SetFocus(self.hwnd)
     def bind(self,event,callback):

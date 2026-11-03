@@ -74,7 +74,7 @@
       "status": "under-test",
       "enabled": true,
       "tools": [],
-      "verification": "Windows voice typing pilot; local Vosk wake only, native Windows editor and persistent session. 30 unit checks passed. Live Win+H and owner voice acceptance pending."
+      "verification": "Automatic browser/media pilot: 36 unit tests and ten-command controlled browser sequence passed. Live Windows dictation/focus and Netflix playback pending."
     }
   ]
 }

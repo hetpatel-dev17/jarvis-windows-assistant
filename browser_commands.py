@@ -3,6 +3,9 @@ import re
 from urllib.parse import urlparse,urljoin,quote_plus
 
 SITES={
+ 'netflix':('Netflix','https://www.netflix.com/'),
+ 'amazon':('Amazon','https://www.amazon.in/'),
+ 'flipkart':('Flipkart','https://www.flipkart.com/'),
  'claude':('Claude','https://claude.ai/'),'claudia':('Claude','https://claude.ai/'),
  'google ai studio':('Google AI Studio','https://aistudio.google.com/'),
  'google studio':('Google AI Studio','https://aistudio.google.com/'),
@@ -24,6 +27,11 @@ def parse(text,area='browser'):
     t=re.sub(r'^(?:(?:hey |hello )?jarvis[, ]+|please |can you |could you |would you |i want you to |i need you to )+','',text.strip(),flags=re.I)
     t=re.sub(r'[, ]*please[.!?]*$','',t,flags=re.I).strip().rstrip('.!?')
     lower=t.casefold()
+    ordinal=re.fullmatch(r'(play|open)(?: the)? (first|second|third|fourth|fifth|\d+)(?: (?:video|result|one))',lower)
+    if ordinal:
+        index={'first':1,'second':2,'third':3,'fourth':4,'fifth':5}.get(ordinal.group(2))
+        if index is None:index=int(ordinal.group(2))
+        if index!=1:return 'browser_control',{'action':'result','index':index,'play':ordinal.group(1)=='play'}
     first=re.fullmatch(r'(?:start (?:playing )?|play |open |put on )(?:the )?(?:first|number one|number 1|1st)(?: (?:one|video|videos|result|song|track))?(?: on youtube)?(?: s)?',lower)
     if first:
         if area=='files' and lower.startswith('open') and not re.search(r'video|song|track|youtube',lower):
@@ -74,7 +82,7 @@ def current_page(browser):
     return page
 
 
-def control(browser,action,target='',query='',direction='down',play=False,check_url=lambda u:u,cancelled=lambda:False):
+def control(browser,action,target='',query='',direction='down',play=False,index=1,check_url=lambda u:u,cancelled=lambda:False):
     import media_controls as media
     from site_workflows import site_page,youtube_search
     if cancelled():raise RuntimeError('Stopped by you.')
@@ -109,6 +117,16 @@ def control(browser,action,target='',query='',direction='down',play=False,check_
         _,url=SITES[target];page=site_page(browser,urlparse(url).hostname,url)
     else:page=current_page(browser)
     host=urlparse(page.url).hostname
+    if action=='result':
+        if not 1<=index<=20:raise ValueError('Choose a result from 1 to 20.')
+        if host=='www.youtube.com' and '/results' in page.url:
+            links=page.locator('ytd-video-renderer a#video-title[href*="/watch"],yt-lockup-view-model a[href^="/watch"]')
+            hrefs=links.evaluate_all('es=>[...new Set(es.filter(e=>e.getClientRects().length).map(e=>e.href))]')
+            if len(hrefs)<index:return {'status':'needs_attention','message':'That numbered video is not visible in these results.'}
+            url=check_url(hrefs[index-1]);media.record(browser,page.url)
+            info=media.open_video(page,url,cancelled);media.record(browser,page.url)
+            return {'status':'playing','player':info,'message':f'Playing video {index}.'}
+        return {'status':'needs_attention','message':'Numbered video selection currently needs YouTube search results.'}
     if action in ('first','reference','play','search') and (host=='accounts.google.com' or re.search(r'/(?:login|signin)(?:[/?]|$)',page.url)):
         return {'status':'needs_attention','message':'This site needs sign-in. Complete it in the normal sign-in browser, then try again.'}
     if action=='reference':

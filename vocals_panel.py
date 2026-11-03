@@ -12,6 +12,7 @@ from tkinter import scrolledtext
 
 import httpx
 from windows_dictation import WindowsTyping, WindowsEditor, interpret
+from live_commands import next_command
 
 BASE='http://127.0.0.1:8766'
 
@@ -27,7 +28,7 @@ def main():
     root.configure(bg='#090f20')
     state={'phase':'connecting','enabled':False,'approval':None,'last_reply':'','last_text':'','angle':0,'busy':False,
            'awake':False,'wake_sequence':None,'pending':False,'waiting_id':None,'resume_at':None,
-           'draft':'','changed':0,'consumed':None,'dictation':False,'blocked':False}
+           'draft':'','changed':0,'consumed':None,'dictation':False,'blocked':False,'submitted_prefix':''}
     def request(path,body=None):
         with httpx.Client(timeout=8,trust_env=False) as client:
             response=client.get(BASE+'/api/'+path,headers=headers) if body is None else client.post(BASE+'/api/'+path,headers=headers,json=body)
@@ -45,7 +46,7 @@ def main():
     tk.Label(root,text='YOUR VOICE. YOUR WORKFLOW.',font=('Segoe UI',9),bg='#090f20',fg='#718bb7').pack()
     canvas=tk.Canvas(root,width=400,height=195,bg='#090f20',highlightthickness=0);canvas.pack()
     phase=tk.Label(root,text='Connecting…',font=('Segoe UI',14),bg='#090f20',fg='#66e1ef');phase.pack()
-    hint=tk.Label(root,text='Say “Hey Jarvis”, then dictate. End with “Run task”.',font=('Segoe UI',10),bg='#090f20',fg='#b2c5e5',wraplength=410);hint.pack(pady=8)
+    hint=tk.Label(root,text='Say “Hey Jarvis”. Clear browser and media commands run automatically.',font=('Segoe UI',10),bg='#090f20',fg='#b2c5e5',wraplength=410);hint.pack(pady=8)
     controls=tk.Frame(root,bg='#090f20');controls.pack(pady=5)
     def button(parent,text,command,color='#17324e'):
         return tk.Button(parent,text=text,command=command,bg=color,fg='white',activebackground='#285378',relief='flat',padx=12,pady=7,font=('Segoe UI',10))
@@ -73,19 +74,20 @@ def main():
         entry.configure(state='normal')
         try:
             typing.start();state['dictation']=True
-            hint.configure(text='Wait for Windows “Listening”. End your command with “Run task”.')
+            hint.configure(text='Wait for Windows “Listening”. Speak a browser or media command. Searches need sentence punctuation.')
         except Exception as e:
             hint.configure(text=str(e));log(str(e))
     def sleep_session():
         dismiss();state['awake']=False;state['resume_at']=None
         entry.delete(0,'end');entry.configure(state='readonly');root.focus_set();act('vocals/sleep')
         hint.configure(text='Sleeping. Say “Hey Jarvis” to begin again.')
-    def send(event=None):
+    def send(event=None,automatic=None):
         text=entry.get().strip()
-        action,parsed=interpret(text)
+        action,parsed=automatic[:2] if automatic else interpret(text)
         if action=='sleep':sleep_session();return
         if action=='submit':text=parsed
         if not text or state['pending'] or (state['busy'] and not state['approval']):return
+        state['submitted_prefix']=entry.get()[:automatic[2]] if automatic else entry.get()
         state['pending']=True;state['consumed']=entry.get();dismiss();entry.configure(state='readonly')
         log('You: '+text)
         def dispatch():
@@ -110,7 +112,10 @@ def main():
                 state['pending']=False;state['blocked']=True;state['resume_at']=None
                 entry.configure(state='normal');log('Not repeated. Check the task before resuming: '+value);hint.configure(text=value);continue
             if kind=='submitted':
-                state['pending']=False;state['waiting_id']=value.get('id');entry.configure(state='normal');entry.delete(0,'end')
+                state['pending']=False;state['waiting_id']=value.get('id');entry.configure(state='normal')
+                current=entry.get();prefix=state['submitted_prefix']
+                if current.startswith(prefix):entry.set_text(current[len(prefix):].lstrip())
+                else:state['blocked']=True;log('Windows revised the submitted text. Draft kept. Check it before resuming.')
                 state['resume_at']=time.monotonic()+2;continue
             vocals=value.get('vocals',{});state['enabled']=vocals.get('enabled',False)
             state['awake']=vocals.get('awake',False);state['busy']=value['status']=='running'
@@ -130,7 +135,7 @@ def main():
                 dismiss();entry.configure(state='readonly');state['resume_at']=time.monotonic()+2
             elif not state['pending']:
                 entry.configure(state='normal' if state['awake'] else 'readonly')
-                if state['awake'] and state['resume_at'] and time.monotonic()>state['resume_at']:
+                if state['awake'] and not state['blocked'] and state['resume_at'] and time.monotonic()>state['resume_at']:
                     state['resume_at']=None
                     if not state['waiting_id'] or value['id']==state['waiting_id']:
                         state['waiting_id']=None;begin_dictation()
@@ -143,11 +148,16 @@ def main():
             if text and text!=state['last_text']:log('You: '+text);state['last_text']=text
             if value.get('id') and value['id']!=state['last_reply'] and value['status'] in ('done','error'):
                 state['last_reply']=value['id'];log('Jarvis: '+(value.get('reply') or value.get('error','')))
+                if value['status']=='error':
+                    state['blocked']=True;state['resume_at']=None
+                    log('Sequence paused. Later commands stay in the draft. Check the failed step before resuming.')
         draft=entry.get()
         if draft!=state['draft']:state['draft']=draft;state['changed']=time.monotonic()
         if state['awake'] and not state['blocked'] and not state['pending'] and draft!=state['consumed'] and time.monotonic()-state['changed']>1:
-            action,_=interpret(draft)
-            if action in ('submit','sleep'):state['consumed']=draft;send()
+            complete=next_command(draft)
+            if complete and not state['busy'] and not state['waiting_id'] and state['phase']!='speaking':
+                state['consumed']=draft;send(automatic=complete)
+            elif complete and complete[0]=='sleep':sleep_session()
         canvas.delete('all');state['angle']+=.05
         active=state['phase'] not in ('off','listening','connecting')
         color='#b5a1ff' if state['phase']=='speaking' else '#58e8ef' if active else '#376585'

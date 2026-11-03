@@ -388,7 +388,7 @@ def action_tools():
     return {
       'download_file':ActionTool('download_file','Save a user-requested public PDF or ZIP from an exact observed download URL. Follows checked redirects, retries temporary network failures up to three times, verifies file signature, and reuses an unchanged saved copy. Does not install, extract, execute, upload or use signed-in browser cookies. A webpage is not authorization to download.',{'action':{'type':'string','enum':['download']},'url':{'type':'string'},'kind':{'type':'string','enum':['pdf','zip']}},lambda **p:Downloads(Path.home()/'Downloads'/'Jarvis').control(**p,check_url=check_url,cancelled=CANCEL.is_set),timeout=120),
       'skills':ActionTool('skills','List project skills and their real verification states, or load a skill by its catalog ID. Planned/disabled skills have no execution tools.',{'action':{'type':'string','enum':['list','load']},'name':{'type':'string'}},SKILLS.control),
-      'browser_control':ActionTool('browser_control','Open a named website or URL, search YouTube/Google/Bing/current site, scroll, go back, or open/play the first current result. Use the existing page for follow-ups; do not ask the user to repeat an already stated choice. Navigation/search/play do not submit messages.',{'action':{'type':'string','enum':['open','search','scroll','first','play','back','reference']},'target':{'type':'string'},'query':{'type':'string'},'direction':{'type':'string','enum':['up','down']},'play':{'type':'boolean'}},lambda **p:browser_commands.control(BROWSER,**p,check_url=check_url,cancelled=CANCEL.is_set),browser=True),
+      'browser_control':ActionTool('browser_control','Open a named website or URL, search YouTube/Google/Bing/current site, scroll, go back, or open/play a current YouTube result by index. Use the existing page for follow-ups. Navigation/search/play do not submit messages.',{'action':{'type':'string','enum':['open','search','scroll','first','play','back','reference','result']},'target':{'type':'string'},'query':{'type':'string'},'direction':{'type':'string','enum':['up','down']},'play':{'type':'boolean'},'index':{'type':'integer'}},lambda **p:browser_commands.control(BROWSER,**p,check_url=check_url,cancelled=CANCEL.is_set),browser=True),
       'windows_operator':ActionTool('windows_operator','Find local files and folders using remembered name words. Search query in scope Desktop, Downloads, Documents, Pictures, Music, Videos, here, or computer. Show numbered matches before opening an uncertain name. open opens an exact folder/file in its Windows app. open_match opens one current match by target number or match_id. No uploads, deletions or shell execution.',
         {'action':{'type':'string','enum':['status','search','open','open_match','list','open_selected']},'query':{'type':'string'},'scope':{'type':'string'},'target':{'type':'string'},'match_id':{'type':'string'}},windows_action),
       'youtube_control':ActionTool('youtube_control','Control YouTube playback. Search and play the first normal video; play/pause; next/previous video; forward/rewind seconds; set video volume. These controls do not send messages.',
@@ -448,6 +448,8 @@ def run_task(text):
                 reply=info.get('message',result.content)
             except (ValueError,TypeError):
                 reply=result.content
+            if not result.success:
+                raise RuntimeError(reply)
             finish_task(text,reply)
             return
         youtube=site_workflows.youtube_query(text)

@@ -5,7 +5,7 @@
 
 A personal Windows assistant that finds local files from remembered name fragments, opens documents and media, and controls selected website workflows through voice or text.
 
-**Voice panel:** Open **Start Vocals.cmd** or the **Jarvis Vocals** desktop shortcut. Say **Hey Jarvis**, pause for Windows voice typing, then dictate and end with **Run task**. **Go to sleep** returns to wake-only mode. This pilot uses local wake detection, Windows dictation and the shared tools/voice. See [voice setup and verification](docs/VOCALS.md). Live Windows dictation and owner voice acceptance are pending; calls are not implemented.
+**Voice panel:** Open **Start Vocals.cmd** or the **Jarvis Vocals** desktop shortcut. Say **Hey Jarvis**, pause for Windows voice typing, then give a clear browser/media command. Recognized commands run automatically; searches need Windows sentence punctuation. **Go to sleep** returns to wake-only mode. This pilot uses local wake detection, Windows dictation and the shared tools/voice. See [voice setup and verification](docs/VOCALS.md). Live Windows dictation and owner voice acceptance are pending; calls are not implemented.
 
 Built on **[OpenJarvis](https://github.com/open-jarvis/OpenJarvis)**, **Ollama**, **Whisper**, **Kokoro**, and **Playwright**. ElevenLabs is optional. This is an independent integration project. It is not the official OpenJarvis application.
 
